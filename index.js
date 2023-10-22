@@ -1,4 +1,8 @@
 import express from 'express'
+import mongoose from 'mongoose';
+import dotenv from 'dotenv';
+dotenv.config();
+import Products from './src/models/Products.js';
 
 const app = express();
 
@@ -6,9 +10,32 @@ app.use(express.json());
 
 const PORT = 5000;
 
-const products = [];
+// const MONGODB_URI = 'mongodb+srv://harshalikanoje:uLmeUdQROQ3tVoyy@mongodatabase.1tz4hp4.mongodb.net/e-commerce';
 
-app.get('/products', (req, res) => {
+const connectMongoDB = async () => {
+    const connect = await mongoose.connect(process.env.MONGODB_URI);
+
+    if(connect)
+    {
+        console.log("Succesfully connected with MongoDB")
+    }
+}
+connectMongoDB();
+
+// const productSchema = new Schema({
+//     name : String,
+//     price : Number,
+//     description : String,
+//     quantity : Number
+// })
+
+// const Products = model('Product',productSchema)
+
+// const products = [];
+
+app.get('/products', async (req, res) => {
+
+    const products = await Products.find()
 
     res.json({
         success: true,
@@ -17,17 +44,21 @@ app.get('/products', (req, res) => {
     })
 })
 
-app.post('/product', (req, res) => {
-    const { name, price, description, quantity } = req.body
+app.post('/product',async (req, res) => {
+    const { name, price, description, brand ,imgUrl} = req.body
 
-    const product = {
+    const newProduct = new Products({
         name: name,
         price: price,
         description: description,
-        quantity: quantity
-    }
+        brand: brand,
+        imgUrl: imgUrl
+    })
 
-    products.push(product)
+    const saveProduct = await newProduct.save();
+    // products.push(product)
+
+
 
     if (!name) {
         return res.json({
@@ -51,30 +82,39 @@ app.post('/product', (req, res) => {
         })
     }
 
-    if (!quantity) {
+    if (!brand) {
         return res.json({
             success: false,
-            message: "Product quantity is required"
+            message: "Product brand is required"
+        })
+    }
+
+    if (!imgUrl) {
+        return res.json({
+            success: false,
+            message: "Product imgUrl is required"
         })
     }
 
     res.json({
         success: true,
-        data: product,
+        data: saveProduct,
         messeage: 'successfully add new product'
     })
 })
 
-app.get('/product', (req, res) => {
+app.get('/product', async (req, res) => {
 
     const { name } = req.query
-    let product = null;
 
-    products.forEach((prod) => {
-        if (prod.name == name) {
-            return product = prod
-        }
-    })
+    const product = await Products.findOne({name : name})
+    // let product = null;
+
+    // products.forEach((prod) => {
+    //     if (prod.name == name) {
+    //         return product = prod
+    //     }
+    // })
 
     if (product == null) {
         res.json({
