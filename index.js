@@ -130,6 +130,123 @@ app.get('/product', async (req, res) => {
     })
 })
 
+// delete method to delete a particular product with id
+
+app.delete('/product/:_id', async (req , res) => {
+    const {_id} = req.params;
+
+    const deleteProduct = await Products.deleteOne({_id : _id})
+
+    res.json({
+        success: true,
+        data: deleteProduct,
+        message: `Successfully deleted product with id ${_id}`
+    })
+})
+
+// put method to update a particular product
+
+app.put('/product/:_id', async (req , res) => {
+    const {_id} = req.params;
+    const {name , price, description, imgUrl, brand} = req.body;
+
+    if (!name) {
+        return res.json({
+            success: false,
+            message: "Product name is required"
+        })
+    }
+
+    if (!price) {
+        return res.json({
+            success: false,
+            message: "Product price is required"
+        })
+    }
+
+
+    if (!description) {
+        return res.json({
+            success: false,
+            message: "Product description is required"
+        })
+    }
+
+    if (!brand) {
+        return res.json({
+            success: false,
+            message: "Product brand is required"
+        })
+    }
+
+    if (!imgUrl) {
+        return res.json({
+            success: false,
+            message: "Product imgUrl is required"
+        })
+    }
+
+    await Products.updateOne({_id: _id}, {$set:{
+        name: name,
+        price: price,
+        description: description,
+        imgUrl: imgUrl,
+        brand: brand
+    
+    }})
+
+    const updateProduct = await Products.findOne({_id: _id})
+
+    res.json({
+        success:true,
+        data:updateProduct,
+        message: "succesfully updated product"
+    })
+})
+
+
+app.patch('/product/:_id', async (req , res) => {
+    const {_id} = req.params;
+    const {name , price, description, imgUrl, brand} = req.body;
+
+    const product = await Products.findById(_id)
+
+    if(name)
+    {
+        product.name = name
+    }
+
+    if(price)
+    {
+        product.price = price
+    }
+
+    if(description)
+    {
+        product.description = description
+    }
+
+    if(imgUrl)
+    {
+        product.imgUrl = imgUrl
+    }
+
+    if(brand)
+    {
+        product.brand = brand
+    }
+
+    const updatedProduct = await product.save();
+    // const saveProduct = await newProduct.save();
+
+    res.json({
+        success:true,
+        data:updatedProduct,
+        message: "succesfully updated product"
+    })
+})
+
+
 app.listen(PORT, (req, res) => {
     console.log(`Server is running on PORT ${PORT}`);
 });

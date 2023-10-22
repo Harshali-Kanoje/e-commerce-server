@@ -4,7 +4,8 @@ const productSchema = new Schema({
     name : String,
     price : Number,
     description : String,
-    quantity : Number
+    imgUrl : String,
+    brand : String
 })
 
 const Products = model('Product',productSchema)
